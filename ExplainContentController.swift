@@ -10,14 +10,51 @@ import UIKit
 
 class ExplainContentController: UIViewController {
     
-    var pageHeadings = ["","","",""]
-    var pageImages = ["","","",""]
-    var pageContent = ["","",""]
+    let width = UIScreen.main.bounds.width
+    let height = UIScreen.main.bounds.height
+    
+    var titleLabel: UILabel!
+    var explainImageView: UIImageView!
+    var contentLabel: UILabel!
+    var pagControl: UIPageControl!
+    var nextBtn: UIButton!
+    
+    var index = 0
+    var pageHeadings = ""
+    var pageImages = ""
+    var pageContent = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        self.view.backgroundColor = UIColor.white
+        
+        self.titleLabel = UILabel()
+        self.titleLabel.font = UIFont(name: "Helvetica", size: 30)
+        self.titleLabel.textAlignment = .center
+        self.titleLabel.textColor = UIColor.darkGray
+        self.titleLabel.text = pageHeadings
+        self.view.addSubview(self.titleLabel)
+        
+        self.explainImageView = UIImageView(image: UIImage(named: pageImages))
+        self.explainImageView.contentMode = .scaleToFill
+        self.view.addSubview(self.explainImageView)
+        
+        
+        
+        
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        let gap: CGFloat = 10
+        self.titleLabel.frame.size = CGSize(width: width / 3, height: 45)
+        self.titleLabel.center = CGPoint(x: width / 2, y: 22.5 + gap)
+        
+        self.explainImageView.frame.size = CGSize(width: 200, height: 200)
+        self.explainImageView.center = CGPoint(x: width / 2, y: self.titleLabel.frame.maxY + 50 + gap)
+        
     }
 
     override func didReceiveMemoryWarning() {

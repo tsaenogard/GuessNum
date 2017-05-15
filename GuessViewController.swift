@@ -21,8 +21,9 @@ class GuessViewController: UIViewController {
     var ansNum: [Int] = []
     var guessNum: [Int] = []
     var resultString: [String] = []
+    var guessTime = 0
     
-    var numOfNum: Int = 0
+    var numOfNum: Int = 4
     var boolOfRepeat: Bool = false
     let hide:Bool =  true
     
@@ -47,7 +48,6 @@ class GuessViewController: UIViewController {
         
         self.bombImageView = UIImageView(image: UIImage(named: "img1.jpg"))
         self.bombImageView.contentMode = .scaleAspectFill
-        self.bombImageView.backgroundColor = UIColor.red
         self.view.addSubview(self.bombImageView)
         
         for _ in 0 ..< numOfNum {
@@ -68,7 +68,7 @@ class GuessViewController: UIViewController {
             button.setTitleColor(UIColor.white, for: .normal)
             button.backgroundColor = UIColor(red: 0, green: 127 / 255 , blue: 255 / 255, alpha: 1.0)
             button.layer.cornerRadius = 5.0
-            button.addTarget(self, action: #selector(onBtnAction(_:)), for: .touchUpInside)
+            button.addTarget(self, action: #selector(onNumAction(_:)), for: .touchUpInside)
             self.numBtn.append(button)
             self.view.addSubview(button)
         }
@@ -188,7 +188,7 @@ class GuessViewController: UIViewController {
         
     }
     //MARK: - Button
-    func onBtnAction(_ sender: UIButton) {
+    func onNumAction(_ sender: UIButton) {
         for (i,textField) in textNums.enumerated() {
             if textField.isFirstResponder {
                 textField.text = sender.currentTitle
@@ -201,6 +201,35 @@ class GuessViewController: UIViewController {
     }
     
     func onCheckAction(_ sender: UIButton) {
+        var str = ""
+        guessNum.removeAll()
+        for textField in textNums {
+            if textField.text == "" {
+                let alertController = UIAlertController(title: "錯誤", message: "尚有數字未填", preferredStyle: .alert)
+                let alertAction1 = UIAlertAction(title: "確定", style: .default, handler: nil)
+                alertController.addAction(alertAction1)
+                self.present(alertController, animated: true, completion: nil)
+                return
+            }
+            guessNum.append(Int(textField.text!)!)
+            str.append(textField.text!)
+        }
+        let result = checkAns()
+        
+        if boolOfRepeat {
+            resultString.append("\(str)    \(result.A)A \(result.B)B \(result.C)C")
+        }else {
+            resultString.append("\(str)    \(result.A)A \(result.B)B")
+        }
+        resultTableView.reloadData()
+        guessTime += 1
+        if result.A == numOfNum {
+            let defaultText = "我剛用了\(guessTime)次，就猜到\(numOfNum)位數\(boolOfRepeat ? "重複" : "不重複")的數字，\(arc4random_uniform(2) > 0 ? "你也來試試？": "誰敢挑戰我？"))"
+            let defaultImage = UIImage(named: "icon-60")!
+            let activityController = UIActivityViewController(activityItems: [defaultText, defaultImage], applicationActivities: nil)
+            self.present(activityController, animated: true, completion: nil)
+        }
+        
         
     }
     
@@ -242,7 +271,7 @@ extension GuessViewController: UITableViewDelegate, UITableViewDataSource {
         label.frame =  CGRect(x: 0, y: 0, width: tableView.frame.width, height: 30)
         label.backgroundColor = UIColor.lightGray
         label.font = UIFont(name: "Helvetica", size: 20)
-        label.text = " 數字      結果 "
+        label.text = " 數字       結果  "
         label.textAlignment = .center
         
         
