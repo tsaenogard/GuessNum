@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import iAd
 
 class SettingViewController: UIViewController {
     let width = UIScreen.main.bounds.width
@@ -16,6 +17,7 @@ class SettingViewController: UIViewController {
     var numStackView: UIStackView!
     var repeatStackView: UIStackView!
     var goBtn: UIButton!
+    var adView: ADBannerView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +51,9 @@ class SettingViewController: UIViewController {
         let numLabel = UILabel()
         numLabel.text = "4"
         numLabel.textColor = UIColor.darkGray
-        numLabel.font = UIFont(name: "Helvetica", size: 30)
+        numLabel.minimumScaleFactor = 25
+        numLabel.adjustsFontSizeToFitWidth = true
+        
         self.numStackView.addArrangedSubview(numLabel)
         self.numStackView.axis = .horizontal
         self.numStackView.spacing = 20
@@ -60,13 +64,14 @@ class SettingViewController: UIViewController {
         let repeatLabel = UILabel()
         repeatLabel.text = "重複"
         repeatLabel.textColor = UIColor.darkGray
-        repeatLabel.font = UIFont(name: "Helvetica", size: 26)
+        repeatLabel.minimumScaleFactor = 20
+        repeatLabel.adjustsFontSizeToFitWidth = true
         self.repeatStackView.addArrangedSubview(repeatLabel)
         let repeatSwitch = UISwitch()
         repeatSwitch.isOn = false
         self.repeatStackView.addArrangedSubview(repeatSwitch)
         self.repeatStackView.axis = .horizontal
-        self.repeatStackView.spacing = 20
+        self.repeatStackView.spacing = 10
         self.repeatStackView.alignment = .fill
         self.view.addSubview(self.repeatStackView)
         
@@ -77,6 +82,12 @@ class SettingViewController: UIViewController {
         self.goBtn.setTitleColor(UIColor.blue, for: .normal)
         self.goBtn.addTarget(self, action: #selector(onGoBtn(_:)), for: .touchUpInside)
         self.view.addSubview(self.goBtn)
+        
+        self.adView = ADBannerView(adType: .banner)
+        self.adView.delegate = self
+        self.adView.isHidden = true
+        self.canDisplayBannerAds = true
+        self.view.addSubview(self.adView)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -92,6 +103,9 @@ class SettingViewController: UIViewController {
         
         self.goBtn.frame.size = CGSize(width: 80, height: 50)
         self.goBtn.center = CGPoint(x: width / 2, y: self.repeatStackView.frame.maxY + gap * 2)
+        
+        self.adView.frame.size = CGSize(width: width, height: 100)
+        self.adView.center = CGPoint(x: width / 2, y: height - (self.navigationController?.navigationBar.frame.height)! - UIApplication.shared.statusBarFrame.height - 50)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -137,4 +151,29 @@ class SettingViewController: UIViewController {
     }
     */
 
+}
+
+extension SettingViewController: ADBannerViewDelegate {
+    func bannerViewWillLoadAd(_ banner: ADBannerView!) {
+        NSLog("bannerViewWillLoadAd")
+    }
+    func bannerViewDidLoadAd(_ banner: ADBannerView!) {
+        NSLog("bannerViewDidLoadAd")
+        self.adView.isHidden = false
+    }
+    
+    func bannerViewActionDidFinish(_ banner: ADBannerView!) {
+        NSLog("bannerViewDidLoadAd")
+        //optional resume paused game code
+    }
+    
+    func bannerViewActionShouldBegin(_ banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
+        NSLog("bannerViewActionShouldBegin")
+        //optional pause game code
+        return true
+    }
+    
+    func bannerView(_ banner: ADBannerView!, didFailToReceiveAdWithError error: Error!) {
+        NSLog("bannerView")
+    }
 }
