@@ -11,11 +11,20 @@ import UIKit
 class ExplainPageController: UIPageViewController {
     
     var pageHeadings = ["設定位數","設定重複","開始遊戲","C的說明"]
-    var pageImages = ["ex1.jpg","ex2.jpg","ex3.jpg","ex4.jpg"]
-    var pageContent = ["藉由調整拉桿決定數字的位數\n4-容易\n5-適中\n6-困難\n","藉由啟動開關決定數字是否重複\n不重複-容易\n重複-困難","當輸入數字後，會對數字進行判定\n以ABC三個級別顯示\nA-位置跟數字皆正確。。。\nB-有這個數字但位置不正確\nＣ-有這個數字且重複出現\nPS:Ｃ只會在重複關卡出現", "當輸入的數字，出現重複的\"現象\"時\n，便會記成1C，跟重複的次數無關"]
+    var pageImages = ["ex1.jpg","ex2.jpg","ex3.jpg","ex4.PNG"]
+    var pageContent = ["藉由調整拉桿決定數字的位數\n4-容易\n5-適中\n6-困難","藉由啟動開關決定數字是否重複\n不重複-容易\n重複-困難","當輸入數字後，會對數字進行判定\n以ABC三個級別顯示\nA-位置跟數字皆正確。。。\nB-有這個數字但位置不正確\nＣ-有這個數字且重複出現\nPS:Ｃ只會在重複關卡出現", "當輸入的數字，出現重複時\n便會記成1C\nPS:跟重複的次數無關"]
+    var pageHeight = [4,3,6,3]
     
-    var canceal: Bool = false
+    var canceal: Bool = true
     var ansString: String = ""
+    
+//    override init(transitionStyle style: UIPageViewControllerTransitionStyle, navigationOrientation: UIPageViewControllerNavigationOrientation, options: [String : Any]? = nil) {
+//        super.init(transitionStyle: style, navigationOrientation: navigationOrientation, options: options)
+//    }
+//    
+//    required init?(coder: NSCoder) {
+//        fatalError("init(coder:) has not been implemented")
+//    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +35,6 @@ class ExplainPageController: UIPageViewController {
         if let startViewController = contentViewController(at: 0) {
             setViewControllers([startViewController], direction: .forward, animated: true, completion: nil)
         }
-    
     }
 
     override func didReceiveMemoryWarning() {
@@ -52,11 +60,14 @@ class ExplainPageController: UIPageViewController {
         let contentController = ExplainContentController()
         if index == -1 {
             contentController.pageContent = ansString
+            contentController.index = index
             return contentController
         }
         contentController.pageHeadings = pageHeadings[index]
         contentController.pageImages = pageImages[index]
         contentController.pageContent = pageContent[index]
+        contentController.index = index
+        contentController.pageHeight = pageHeight[index]
         
         return contentController
     }

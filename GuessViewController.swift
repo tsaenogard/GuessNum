@@ -50,14 +50,13 @@ class GuessViewController: UIViewController {
         self.bombImageView.contentMode = .scaleAspectFill
         self.view.addSubview(self.bombImageView)
         
-        for _ in 0 ..< numOfNum {
+        for _ in 0 ..< self.numOfNum {
             let textField = UITextField()
-            textField.placeholder = "_"
-            textField.font = UIFont(name: "Helvetica", size: 30)
-            textField.adjustsFontSizeToFitWidth = true
-            textField.textAlignment = .center
             textField.inputView = UIView(frame: CGRect.zero)
             textField.borderStyle = .line
+            textField.font = UIFont(name: "Helvetica", size: height / 15)
+            textField.textAlignment = .center
+            textField.placeholder = "_"
             textNums.append(textField)
             self.view.addSubview(textField)
         }
@@ -75,6 +74,7 @@ class GuessViewController: UIViewController {
         
         self.checkBtn = UIButton()
         self.checkBtn.setTitle("CHECK!", for: .normal)
+        self.checkBtn.titleLabel?.adjustsFontSizeToFitWidth = true
         self.checkBtn.setTitleColor(UIColor.white, for: .normal)
         self.checkBtn.backgroundColor = UIColor.red
         self.checkBtn.layer.cornerRadius = 5.0
@@ -87,7 +87,8 @@ class GuessViewController: UIViewController {
         self.resultTableView.backgroundColor = UIColor(red: 252 / 255, green: 243 / 255, blue: 218 / 255, alpha: 1.0)
         self.view.addSubview(self.resultTableView)
         
-        textNums[0].becomeFirstResponder()
+        self.ansNum = createAns()
+        self.textNums[0].becomeFirstResponder()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -102,7 +103,8 @@ class GuessViewController: UIViewController {
             
             textField.center = CGPoint(
                 x: width * CGFloat(i + 1) / CGFloat(textNums.count + 1),
-                y: self.bombImageView.frame.maxY + height / 30 + gap)}
+                y: self.bombImageView.frame.maxY + height / 30 + gap)
+        }
         
         for (i,button) in numBtn.enumerated() {
             button.frame.size = CGSize(
@@ -120,9 +122,7 @@ class GuessViewController: UIViewController {
             x: width / 6,
             y: self.numBtn[9].frame.maxY + gap,
             width: width * 2 / 3,
-            height: height - self.numBtn[9].frame.maxY - (navigationController?.navigationBar.frame.height)! - 6 * gap)
-        print(resultTableView.frame.minY)
-        print(resultTableView.frame.height)
+            height: height - self.numBtn[9].frame.maxY - (navigationController?.navigationBar.frame.height)! - 5 * gap)
         
     }
 
@@ -143,7 +143,7 @@ class GuessViewController: UIViewController {
                 baseArray.remove(at: randon)
             }
         }
-        print(ansNum)
+        print(resultArray)
         return resultArray
     }
     
@@ -176,8 +176,24 @@ class GuessViewController: UIViewController {
         return (posCorrect, numCorrect, repeatNum)
     }
     
+    func clear() {
+        self.ansNum = createAns()
+        self.guessTime = 0
+        self.resultString.removeAll()
+        self.resultTableView.reloadData()
+        self.bombImageView.image = UIImage(named: "img1.jpg")
+        for textField in textNums {
+            textField.text = ""
+        }
+        self.checkBtn.setTitle("CHECK!", for: .normal)
+        self.checkBtn.removeTarget(self, action: #selector(clear), for: .touchUpInside)
+        self.checkBtn.addTarget(self, action: #selector(onCheckAction(_:)), for: .touchUpInside)
+        self.textNums[0].becomeFirstResponder()
+
+    }
+    
     func explain() {
-        let pageViewController = ExplainPageController()
+        let pageViewController = ExplainPageController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         var ansString = ""
         pageViewController.canceal = false
         for int in ansNum {
@@ -187,12 +203,13 @@ class GuessViewController: UIViewController {
         self.present(pageViewController, animated: true, completion: nil)
         
     }
+    
     //MARK: - Button
     func onNumAction(_ sender: UIButton) {
         for (i,textField) in textNums.enumerated() {
             if textField.isFirstResponder {
                 textField.text = sender.currentTitle
-                if i < textNums.count - 1 {
+                if i < textNums.count - 1 && textNums[i + 1].text == "" {
                     textNums[i + 1].becomeFirstResponder()
                 }
                 return
@@ -202,16 +219,16 @@ class GuessViewController: UIViewController {
     
     func onCheckAction(_ sender: UIButton) {
         var str = ""
-        guessNum.removeAll()
+        self.guessNum.removeAll()
         for textField in textNums {
             if textField.text == "" {
-                let alertController = UIAlertController(title: "錯誤", message: "尚有數字未填", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "出錯囉", message: "尚有數字未填", preferredStyle: .alert)
                 let alertAction1 = UIAlertAction(title: "確定", style: .default, handler: nil)
                 alertController.addAction(alertAction1)
                 self.present(alertController, animated: true, completion: nil)
                 return
             }
-            guessNum.append(Int(textField.text!)!)
+            self.guessNum.append(Int(textField.text!)!)
             str.append(textField.text!)
         }
         let result = checkAns()
@@ -221,13 +238,36 @@ class GuessViewController: UIViewController {
         }else {
             resultString.append("\(str)    \(result.A)A \(result.B)B")
         }
-        resultTableView.reloadData()
-        guessTime += 1
-        if result.A == numOfNum {
-            let defaultText = "我剛用了\(guessTime)次，就猜到\(numOfNum)位數\(boolOfRepeat ? "重複" : "不重複")的數字，\(arc4random_uniform(2) > 0 ? "你也來試試？": "誰敢挑戰我？"))"
-            let defaultImage = UIImage(named: "icon-60")!
-            let activityController = UIActivityViewController(activityItems: [defaultText, defaultImage], applicationActivities: nil)
-            self.present(activityController, animated: true, completion: nil)
+        self.resultTableView.reloadData()
+        for textField in textNums {
+            textField.text = ""
+        }
+        self.textNums[0].becomeFirstResponder()
+        self.guessTime += 1
+        UIView.animate(withDuration: 1.0) {
+            self.bombImageView.transform =  CGAffineTransform(scaleX: 3.0, y: 3.0)
+            self.bombImageView.image = UIImage(named: (self.guessTime < 10 ? "img\(self.guessTime).jpg" : "img10.jpg") )
+            self.bombImageView.transform =  CGAffineTransform(scaleX: 1.0, y: 1.0)
+        }
+        
+        if result.A == self.numOfNum {
+            let alertController = UIAlertController(title: "答對了", message: "你用了\(guessTime)次就猜出正確答案，跟朋友炫耀一下吧", preferredStyle: .alert)
+            var alertAction = UIAlertAction(title: "分享", style: .default, handler: { (action) in
+                
+                let defaultText = "我剛用了\(self.guessTime)次，就猜到\(self.numOfNum)位 \(self.boolOfRepeat ? "重複" : "不重複")的數字，\(arc4random_uniform(2) > 0 ? "你也來試試？": "誰敢挑戰我？"))"
+                if let defaultImage = UIImage(named: "appicon.PNG") {
+                    let activityController = UIActivityViewController(activityItems: [defaultText, defaultImage], applicationActivities: nil)
+                    self.present(activityController, animated: true, completion: nil)
+                }
+            })
+            alertController.addAction(alertAction)
+            alertAction = UIAlertAction(title: "不分享", style: .cancel, handler: nil)
+            alertController.addAction(alertAction)
+            self.present(alertController, animated: true, completion: nil)
+        
+            self.checkBtn.setTitle("RESTART", for: .normal)
+            self.checkBtn.removeTarget(self, action: #selector(onCheckAction(_:)), for: .touchUpInside)
+            self.checkBtn.addTarget(self, action: #selector(clear), for: .touchUpInside)
         }
         
         
@@ -284,5 +324,9 @@ extension GuessViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 30
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

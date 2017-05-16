@@ -35,7 +35,7 @@ class SettingViewController: UIViewController {
             action:#selector(SettingViewController.explain))
         self.navigationItem.rightBarButtonItem = rightButton
         
-        self.titleImageView = UIImageView(image: UIImage(named: "title"))
+        self.titleImageView = UIImageView(image: UIImage(named: "title.PNG"))
         self.titleImageView.contentMode = .scaleAspectFit
         self.view.addSubview(self.titleImageView)
         
@@ -85,14 +85,23 @@ class SettingViewController: UIViewController {
         self.titleImageView.center = CGPoint(x: width / 2, y: height / 8)
         
         self.numStackView.frame.size = CGSize(width: width / 3, height: 30)
-        self.numStackView.center = CGPoint(x: width / 2, y: self.titleImageView.frame.maxY + gap * 2)
+        self.numStackView.center = CGPoint(x: width / 2, y: self.titleImageView.frame.maxY + gap )
         
         self.repeatStackView.frame.size = CGSize(width: width / 3, height: 30)
-        self.repeatStackView.center = CGPoint(x: width / 2, y: self.numStackView.frame.maxY + gap * 2)
+        self.repeatStackView.center = CGPoint(x: width / 2, y: self.numStackView.frame.maxY + gap )
         
         self.goBtn.frame.size = CGSize(width: 80, height: 50)
-        self.goBtn.center = CGPoint(x: width / 2, y: self.repeatStackView.frame.maxY + gap * 3)
-        print("\(goBtn.frame.maxY)/ \(height)")
+        self.goBtn.center = CGPoint(x: width / 2, y: self.repeatStackView.frame.maxY + gap * 2)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if UserDefaults.standard.bool(forKey: "hasViewedExplain") {
+            return
+        }
+        let pageViewController = ExplainPageController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+            self.present(pageViewController, animated: true, completion: nil)
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -101,7 +110,7 @@ class SettingViewController: UIViewController {
     }
     
     func explain() {
-        let pageViewController = ExplainPageController()
+        let pageViewController = ExplainPageController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         self.present(pageViewController, animated: true, completion: nil)
     }
     
