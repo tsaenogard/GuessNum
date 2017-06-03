@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import iAd
+import GoogleMobileAds
 
 class SettingViewController: UIViewController {
     let width = UIScreen.main.bounds.width
@@ -17,7 +17,9 @@ class SettingViewController: UIViewController {
     var numStackView: UIStackView!
     var repeatStackView: UIStackView!
     var goBtn: UIButton!
-    var adView: ADBannerView!
+    
+    var adView: GADBannerView!
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,11 +85,14 @@ class SettingViewController: UIViewController {
         self.goBtn.addTarget(self, action: #selector(onGoBtn(_:)), for: .touchUpInside)
         self.view.addSubview(self.goBtn)
         
-        self.adView = ADBannerView(adType: .banner)
+        self.adView = GADBannerView(adSize: kGADAdSizeSmartBannerPortrait)
+        self.adView.adUnitID = "ca-app-pub-1619767941592094/5458386961"
+        self.adView.rootViewController = self
         self.adView.delegate = self
-        self.adView.isHidden = true
-        self.canDisplayBannerAds = true
         self.view.addSubview(self.adView)
+        
+        
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -104,8 +109,9 @@ class SettingViewController: UIViewController {
         self.goBtn.frame.size = CGSize(width: 80, height: 50)
         self.goBtn.center = CGPoint(x: width / 2, y: self.repeatStackView.frame.maxY + gap * 2)
         
-        self.adView.frame.size = CGSize(width: width, height: 100)
-        self.adView.center = CGPoint(x: width / 2, y: height - (self.navigationController?.navigationBar.frame.height)! - UIApplication.shared.statusBarFrame.height - 50)
+        self.showAdBanner(isShow: false)
+        self.adView.load(GADRequest())
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -140,6 +146,16 @@ class SettingViewController: UIViewController {
         (numStackView.subviews[1] as! UILabel).text = String(Int(sender.value))
     }
     
+    func showAdBanner(isShow: Bool) {
+        UIView.beginAnimations("", context: nil)
+        if isShow {
+            self.adView.frame.origin.y = height - (self.navigationController?.navigationBar.frame.height)! - UIApplication.shared.statusBarFrame.height - self.adView.frame.height
+        }else {
+            self.adView.frame.origin.y = height - (self.navigationController?.navigationBar.frame.height)! - UIApplication.shared.statusBarFrame.height
+        }
+        UIView.commitAnimations()
+    }
+    
 
     /*
     // MARK: - Navigation
@@ -153,27 +169,16 @@ class SettingViewController: UIViewController {
 
 }
 
-extension SettingViewController: ADBannerViewDelegate {
-    func bannerViewWillLoadAd(_ banner: ADBannerView!) {
-        NSLog("bannerViewWillLoadAd")
+
+extension SettingViewController: GADBannerViewDelegate {
+    func adViewDidReceiveAd(_ bannerView: GADBannerView) { //收到廣告
+        self.showAdBanner(isShow: true)
     }
-    func bannerViewDidLoadAd(_ banner: ADBannerView!) {
-        NSLog("bannerViewDidLoadAd")
-        self.adView.isHidden = false
+    func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {  //收到廣告錯誤
+        self.showAdBanner(isShow: false)
     }
-    
-    func bannerViewActionDidFinish(_ banner: ADBannerView!) {
-        NSLog("bannerViewDidLoadAd")
-        //optional resume paused game code
+    func adViewWillLeaveApplication(_ bannerView: GADBannerView) {  //離開應用程式(點擊廣告)
     }
     
-    func bannerViewActionShouldBegin(_ banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
-        NSLog("bannerViewActionShouldBegin")
-        //optional pause game code
-        return true
-    }
-    
-    func bannerView(_ banner: ADBannerView!, didFailToReceiveAdWithError error: Error!) {
-        NSLog("bannerView")
-    }
 }
+

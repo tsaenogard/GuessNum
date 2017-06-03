@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import GoogleMobileAds
 
 class ExplainContentController: UIViewController {
     
@@ -24,6 +25,8 @@ class ExplainContentController: UIViewController {
     var pageImages = ""
     var pageContent = ""
     var pageHeight = 1
+    
+    var interstitial: GADInterstitial!  //全頁廣告
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +70,8 @@ class ExplainContentController: UIViewController {
         }
         self.view.addSubview(self.nextBtn)
         
+        createAndLoadInterstitial()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -86,10 +91,15 @@ class ExplainContentController: UIViewController {
         self.nextBtn.frame.size = CGSize(width: 50, height: 40)
         self.nextBtn.center = CGPoint(x: width - 25 - gap , y: self.pageControl.frame.midY)
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if index == -1 {
+            if self.interstitial.isReady {
+                self.interstitial.present(fromRootViewController: self)
+            }else {
+                print("Ad wasn't ready")
+            }
+        }
     }
     
     func nextBtnAction(_ sender: UIButton) {
@@ -101,16 +111,21 @@ class ExplainContentController: UIViewController {
             dismiss(animated: true, completion: nil)
         }
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
+
+extension ExplainContentController: GADInterstitialDelegate {
+    
+    func createAndLoadInterstitial() -> GADInterstitial {
+        self.interstitial = GADInterstitial(adUnitID: "ca-app-pub-1619767941592094/2047798562")
+        self.interstitial.delegate = self
+        self.interstitial.load(GADRequest())
+        return interstitial
+    }
+    
+    func interstitialDidDismissScreen(_ ad: GADInterstitial) {
+        self.interstitial = createAndLoadInterstitial()
+    }
+}
+
+
+
